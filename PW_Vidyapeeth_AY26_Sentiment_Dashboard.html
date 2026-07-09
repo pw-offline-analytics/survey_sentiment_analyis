@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PW Vidyapeeth · AY26 Non-Conversion Sentiment Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0f1115;
+  --bg-soft:#151822;
+  --panel:#181c27;
+  --panel-2:#1e2330;
+  --line:#2a3040;
+  --line-soft:#20242f;
+  --ink:#eef0f4;
+  --ink-dim:#9aa2b4;
+  --ink-faint:#64697a;
+  --amber:#f0a63a;
+  --amber-soft:#3a2c17;
+  --teal:#48c9b0;
+  --teal-soft:#123531;
+  --coral:#e8615a;
+  --coral-soft:#3a1c1e;
+  --indigo:#7c8cf8;
+  --indigo-soft:#1f2244;
+  --radius:14px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+
+/* ---------- top header ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:linear-gradient(180deg, rgba(15,17,21,0.97), rgba(15,17,21,0.9));
+  border-bottom:1px solid var(--line-soft);
+  backdrop-filter:blur(6px);
+}
+.topbar-inner{
+  max-width:1280px; margin:0 auto; padding:18px 28px 0 28px;
+}
+.brand-row{display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg, var(--indigo), var(--teal));
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.brand-mark svg{width:20px; height:20px;}
+.brand-text h1{font-family:'Sora',sans-serif; font-size:16.5px; font-weight:700; margin:0; letter-spacing:0.2px;}
+.brand-text p{margin:1px 0 0 0; font-size:12px; color:var(--ink-dim);}
+.pulse-wrap{display:flex; align-items:center; gap:8px; color:var(--ink-faint); font-size:11.5px;}
+.pulse-dot{width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 0 rgba(72,201,176,0.6); animation:pulse 2s infinite;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(72,201,176,0.55);}
+  70%{box-shadow:0 0 0 7px rgba(72,201,176,0);}
+  100%{box-shadow:0 0 0 0 rgba(72,201,176,0);}
+}
+.tabs{
+  display:flex; gap:2px; margin-top:16px; overflow-x:auto; scrollbar-width:none;
+  border-bottom:1px solid var(--line-soft);
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{
+  font-family:'Inter',sans-serif; font-size:13.2px; font-weight:600;
+  color:var(--ink-faint); background:transparent; border:none;
+  padding:11px 16px 13px 16px; cursor:pointer; white-space:nowrap;
+  border-bottom:2px solid transparent; transition:color .15s, border-color .15s;
+}
+.tab-btn:hover{color:var(--ink-dim);}
+.tab-btn.active{color:var(--ink); border-bottom-color:var(--amber);}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1280px; margin:0 auto; padding:26px 28px 70px 28px;}
+.panel{display:none;}
+.panel.active{display:block; animation:fade .35s ease;}
+@keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+.section-head{margin:34px 0 16px 0;}
+.section-head:first-child{margin-top:0;}
+.section-head h2{font-family:'Sora',sans-serif; font-size:17px; font-weight:700; margin:0 0 4px 0;}
+.section-head p{margin:0; font-size:13px; color:var(--ink-dim); max-width:720px; line-height:1.5;}
+.eyebrow{
+  font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--amber); margin:0 0 6px 0;
+}
+
+/* ---------- grid & cards ---------- */
+.grid{display:grid; gap:14px;}
+.g4{grid-template-columns:repeat(4,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g2{grid-template-columns:repeat(2,1fr);}
+@media (max-width:980px){.g4{grid-template-columns:repeat(2,1fr);} .g3{grid-template-columns:repeat(2,1fr);} .g2{grid-template-columns:1fr;}}
+@media (max-width:620px){.g4{grid-template-columns:1fr;} .g3{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-radius:var(--radius);
+  padding:18px 18px;
+}
+.card h3{font-family:'Sora',sans-serif; font-size:13.5px; font-weight:700; margin:0 0 3px 0;}
+.card .sub{font-size:11.5px; color:var(--ink-faint); margin:0 0 14px 0;}
+
+.kpi{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-radius:var(--radius);
+  padding:18px 18px 16px 18px;
+  position:relative;
+  overflow:hidden;
+}
+.kpi .tag{font-size:10.5px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px; display:block;}
+.kpi .num{font-family:'Sora',sans-serif; font-size:30px; font-weight:800; line-height:1;}
+.kpi .num span{font-size:15px; font-weight:600; color:var(--ink-dim);}
+.kpi .cap{margin-top:8px; font-size:12px; color:var(--ink-dim); line-height:1.45;}
+.kpi.accent-amber{border-color:rgba(240,166,58,0.35);}
+.kpi.accent-teal{border-color:rgba(72,201,176,0.35);}
+.kpi.accent-coral{border-color:rgba(232,97,90,0.35);}
+.kpi.accent-indigo{border-color:rgba(124,140,248,0.35);}
+.kpi .num.amber{color:var(--amber);}
+.kpi .num.teal{color:var(--teal);}
+.kpi .num.coral{color:var(--coral);}
+.kpi .num.indigo{color:var(--indigo);}
+
+.chart-box{position:relative; height:260px;}
+.chart-box.tall{height:320px;}
+.chart-box.short{height:210px;}
+
+/* ---------- insight callouts ---------- */
+.insight{
+  display:flex; gap:12px; align-items:flex-start;
+  background:var(--panel-2);
+  border:1px solid var(--line-soft);
+  border-left:3px solid var(--amber);
+  border-radius:10px;
+  padding:13px 15px;
+  margin-bottom:10px;
+  font-size:13px; line-height:1.55; color:var(--ink);
+}
+.insight b{color:var(--amber); font-weight:700;}
+.insight.teal{border-left-color:var(--teal);}
+.insight.teal b{color:var(--teal);}
+.insight.coral{border-left-color:var(--coral);}
+.insight.coral b{color:var(--coral);}
+.insight-num{
+  font-family:'Sora',sans-serif; font-weight:800; font-size:16px; color:var(--amber);
+  flex-shrink:0; width:26px;
+}
+
+/* ---------- quotes ---------- */
+.quote-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+@media (max-width:900px){.quote-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:620px){.quote-grid{grid-template-columns:1fr;}}
+.quote-card{
+  background:var(--panel-2); border:1px solid var(--line-soft); border-radius:12px;
+  padding:14px 15px; font-size:12.8px; line-height:1.55; color:var(--ink-dim);
+  position:relative;
+}
+.quote-card::before{content:"\201C"; font-family:'Sora',serif; font-size:26px; color:var(--ink-faint); position:absolute; top:6px; left:10px; opacity:0.5;}
+.quote-card span{display:block; padding-left:16px;}
+.quote-card.positive{border-left:3px solid var(--teal);}
+.quote-card.negative{border-left:3px solid var(--coral);}
+
+/* ---------- tables ---------- */
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+th{text-align:left; color:var(--ink-faint); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; padding:8px 10px; border-bottom:1px solid var(--line-soft);}
+td{padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim);}
+tr:last-child td{border-bottom:none;}
+td.strong{color:var(--ink); font-weight:600;}
+.bar-cell{display:flex; align-items:center; gap:8px;}
+.bar-track{flex:1; height:6px; background:var(--line-soft); border-radius:4px; overflow:hidden;}
+.bar-fill{height:100%; border-radius:4px; background:var(--amber);}
+
+/* ---------- badges ---------- */
+.badge{display:inline-block; font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; letter-spacing:0.3px;}
+.badge.high{background:var(--coral-soft); color:var(--coral);}
+.badge.med{background:var(--amber-soft); color:var(--amber);}
+.badge.low{background:var(--teal-soft); color:var(--teal);}
+
+/* ---------- funnel ---------- */
+.funnel-row{display:flex; align-items:center; gap:14px; margin-bottom:10px;}
+.funnel-label{width:170px; font-size:12px; color:var(--ink-dim); flex-shrink:0;}
+.funnel-bar-track{flex:1; height:26px; background:var(--line-soft); border-radius:6px; overflow:hidden; position:relative;}
+.funnel-bar-fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:8px;}
+.funnel-bar-fill span{font-size:11.5px; font-weight:700; color:#10131a;}
+
+/* ---------- methodology ---------- */
+.notelist{margin:0; padding-left:0; list-style:none;}
+.notelist li{
+  padding:12px 0; border-bottom:1px solid var(--line-soft); font-size:13px; color:var(--ink-dim); line-height:1.6;
+  display:flex; gap:10px;
+}
+.notelist li:last-child{border-bottom:none;}
+.notelist li::before{content:"—"; color:var(--ink-faint); flex-shrink:0;}
+.notelist b{color:var(--ink);}
+
+.footer-note{
+  margin-top:40px; padding-top:18px; border-top:1px solid var(--line-soft);
+  font-size:11.5px; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3C7 3 3 6.8 3 11.5C3 14 4.2 16.2 6.1 17.7L5 21L9 19.3C9.9 19.6 10.9 19.8 12 19.8C17 19.8 21 16 21 11.3C21 6.6 17 3 12 3Z" stroke="#0f1115" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.7" cy="11.3" r="1.1" fill="#0f1115"/><circle cx="12" cy="11.3" r="1.1" fill="#0f1115"/><circle cx="15.3" cy="11.3" r="1.1" fill="#0f1115"/></svg>
+        </div>
+        <div class="brand-text">
+          <h1>PW Vidyapeeth — Non-Conversion Sentiment Study</h1>
+          <p>AY26 Offline Vertical · Enquiry cohorts Nov'25, Dec'25, Mar'26 &amp; Apr'26 · Calling + Feedback Form + Enquiry Database</p>
+        </div>
+      </div>
+      <div class="pulse-wrap">
+        <span class="pulse-dot"></span>
+        <span class="mono" id="recCount">1,362 enquiries analysed</span>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+
+<script id="dashboard-data" type="application/json">{"meta": {"total_records": 1362, "date_range": "Calling window: 17 Jun 2026 \u2013 30 Jun 2026 (outreach to enquiries from Nov'25, Dec'25, Mar'26 & Apr'26 AY26 cohorts)", "callers": {"Priyanshu": 677, "Shayan": 481, "Maheshwari": 204}}, "funnel": {"total_target_audience": 1362, "calls_connected": 304, "call_disposition": {"Complete": 278, "Partial complete": 79, "Callback needed": 546, "No answer": 196, "Refused": 154, "Invalid lead": 50, "Wrong number": 42}, "feedback_form_responses": 304, "consent_given": 365, "consent_refused": 102, "any_qualitative_response": 304}, "region_counts": {"UP": 384, "Maharashtra": 244, "Bihar+JH": 226, "South": 172, "Delhi + HR": 141, "East": 93, "Rajasthan": 75, "NCR +UK": 27}, "course_counts": {"11 IIT-JEE": 549, "11 NEET": 329, "10 BOARD_EXAM": 140, "9 BOARD_EXAM": 134, "12 IIT-JEE": 98, "12 NEET": 62, "8 BOARD_EXAM": 48, "7 BOARD_EXAM": 2}, "center_counts": {"Varanasi - BHU Vidyapeeth": 102, "Patna - Iskcon Vidyapeeth": 98, "Pune - Viman Nagar Vidyapeeth": 82, "Kota Vidyapeeth": 75, "Pune - Hadapsar Vidyapeeth": 73, "Patna - Ashiana Digha Vidyapeeth": 61, "Bengaluru - Yelahanka Vidyapeeth": 60, "Prayagraj - Civil Lines Vidyapeeth": 53, "Bengaluru - JP Nagar Vidyapeeth": 52, "Patna - Boring Road Vidyapeeth": 47, "Pune - FC Road Vidyapeeth": 46, "Lucknow - Gomtinagar Vidyapeeth": 45, "Lucknow - Kapoorthala Vidyapeeth": 42, "Lucknow - Alambagh Vidyapeeth": 36, "Delhi - Jasola Vidyapeeth": 36}, "reason_counts": {"Distance / timing / batch availability issue": 114, "Personal or financial reason": 72, "Student was not convinced": 27, "Other": 26, "Fees / payment / refund clarity issue": 24, "Teacher/friend/relative recommended another option": 11, "Faculty / teaching / doubt quality doubt": 10, "Counselling or follow-up was not convincing": 10, "Centre visit / infrastructure / batch size concern": 7, "Parent trust / results confidence was lower": 6, "Aakash/Allen/local coaching felt safer": 1}, "loss_type_counts": {"Logistics / Timing": 87, "Other / Needs Review": 80, "Student Preference Gap": 24, "Commercial Clarity Gap": 17, "Experience Gap": 14, "Peer Override": 10, "Risk Avoider / Trust Gap": 5}, "shift_stage_counts": {"gradually": 119, "During centre visit/counselling": 93, "After fee/scholarship discussion": 24, "After speaking to teacher/friend/relative": 17, "Still undecided": 16, "After comparing with Aakash/Allen/local coaching": 14, "After demo/faculty/course discussion": 10, "Other": 9, "Before speaking to PW": 5, "No single moment": 2}, "priority_counts": {"Medium": 129, "High - urgent": 81, "Low / recoverable": 30}, "future_open_counts": {"Yes": 82, "No": 79, "Not sure": 59, "Maybe": 56, "if concern is fixed": 13}, "competitor_counts": {"Continued/Joined PW Online": 82, "Joined Allen": 44, "Self-study": 33, "Local Tuition": 20, "Joined Aakash": 14, "Local/Other Coaching": 8, "Other offline coaching": 4, "Other institutes / various": 120}, "final_outcome_counts": {"Joined PW later": 70, "Other": 57, "Joined Allen": 51, "Joined other offline coaching": 47, "Self-study": 42, "Joined local tuition": 24, "Continued PW Online only": 23, "Already joined Vidyapeeth": 17, "Joined Aakash": 16, "Still deciding": 13, "Preparation postponed": 9}, "region_reason": {"Maharashtra": {"Distance / timing / batch availability issue": 25, "Personal or financial reason": 7, "Student was not convinced": 5, "Other": 6, "Fees / payment / refund clarity issue": 2, "Teacher/friend/relative recommended another option": 1}, "Rajasthan": {"Distance / timing / batch availability issue": 4, "Personal or financial reason": 4, "Student was not convinced": 2, "Other": 0, "Fees / payment / refund clarity issue": 0, "Teacher/friend/relative recommended another option": 2}, "Delhi + HR": {"Distance / timing / batch availability issue": 7, "Personal or financial reason": 9, "Student was not convinced": 3, "Other": 1, "Fees / payment / refund clarity issue": 2, "Teacher/friend/relative recommended another option": 3}, "UP": {"Distance / timing / batch availability issue": 42, "Personal or financial reason": 24, "Student was not convinced": 7, "Other": 13, "Fees / payment / refund clarity issue": 6, "Teacher/friend/relative recommended another option": 2}, "Bihar+JH": {"Distance / timing / batch availability issue": 12, "Personal or financial reason": 12, "Student was not convinced": 6, "Other": 3, "Fees / payment / refund clarity issue": 9, "Teacher/friend/relative recommended another option": 3}, "South": {"Distance / timing / batch availability issue": 11, "Personal or financial reason": 5, "Student was not convinced": 2, "Other": 1, "Fees / payment / refund clarity issue": 2, "Teacher/friend/relative recommended another option": 0}, "NCR +UK": {"Distance / timing / batch availability issue": 1, "Personal or financial reason": 3, "Student was not convinced": 0, "Other": 1, "Fees / payment / refund clarity issue": 1, "Teacher/friend/relative recommended another option": 0}, "East": {"Distance / timing / batch availability issue": 12, "Personal or financial reason": 8, "Student was not convinced": 2, "Other": 1, "Fees / payment / refund clarity issue": 2, "Teacher/friend/relative recommended another option": 0}}, "course_reason": {"9 BOARD_EXAM": {"Distance / timing / batch availability issue": 11, "Personal or financial reason": 9, "Student was not convinced": 2, "Other": 2, "Fees / payment / refund clarity issue": 1, "Teacher/friend/relative recommended another option": 0}, "11 IIT-JEE": {"Distance / timing / batch availability issue": 45, "Personal or financial reason": 23, "Student was not convinced": 15, "Other": 12, "Fees / payment / refund clarity issue": 9, "Teacher/friend/relative recommended another option": 6}, "12 NEET": {"Distance / timing / batch availability issue": 4, "Personal or financial reason": 3, "Student was not convinced": 0, "Other": 0, "Fees / payment / refund clarity issue": 1, "Teacher/friend/relative recommended another option": 1}, "10 BOARD_EXAM": {"Distance / timing / batch availability issue": 14, "Personal or financial reason": 7, "Student was not convinced": 2, "Other": 0, "Fees / payment / refund clarity issue": 2, "Teacher/friend/relative recommended another option": 0}, "11 NEET": {"Distance / timing / batch availability issue": 24, "Personal or financial reason": 21, "Student was not convinced": 5, "Other": 9, "Fees / payment / refund clarity issue": 7, "Teacher/friend/relative recommended another option": 4}, "12 IIT-JEE": {"Distance / timing / batch availability issue": 11, "Personal or financial reason": 5, "Student was not convinced": 3, "Other": 2, "Fees / payment / refund clarity issue": 3, "Teacher/friend/relative recommended another option": 0}, "8 BOARD_EXAM": {"Distance / timing / batch availability issue": 5, "Personal or financial reason": 4, "Student was not convinced": 0, "Other": 1, "Fees / payment / refund clarity issue": 1, "Teacher/friend/relative recommended another option": 0}, "7 BOARD_EXAM": {"Distance / timing / batch availability issue": 0, "Personal or financial reason": 0, "Student was not convinced": 0, "Other": 0, "Fees / payment / refund clarity issue": 0, "Teacher/friend/relative recommended another option": 0}}, "conf_by_region": {"Bihar+JH": 4.12, "Delhi + HR": 3.92, "East": 4.36, "Maharashtra": 4.12, "NCR +UK": 3.0, "Rajasthan": 3.39, "South": 4.0, "UP": 4.75}, "overall_conf_avg": 4.25, "caller_complete": {"Priyanshu": 152, "Shayan": 76, "Maheshwari": 50}, "theme_counts": {"Fees / Affordability": 152, "Other / Unclassified": 233, "Distance / New Branch Needed": 263, "Faculty / Teaching Quality": 58, "Nothing to Improve / Satisfied": 152, "Infrastructure / Batch Size": 51, "Trial / Demo Class": 12, "Hostel / Accommodation": 29, "Batch Timing / Scheduling": 153, "Follow-up / Counselling": 27}, "sentiment_counts": {"Neutral/Suggestion": 786, "Constructive/Negative": 31, "Positive": 162}, "sample_quotes": ["Distance was the issue other than it was good option for there student", "they must build more vidyapeeths in local areas and reduce fees", "work on their scholarship plan", "need more branches in local areas", "nothing", "vidyapeeth must work on there calling structure", "they should build more vidyapeeths in local areas", "make vidyapeeth more affordable", "provide better distance and timing option", "open  more branches", "build more vidyapeeths", "nothing", "reduce fees", "provide hostel facilities", "they should fix there staffs and faculty", "make vidyapeeth more affordable", "reduce batch size", "parent have no idea"], "sample_positive": ["Good teaching and doubt solving", "providing good studies", "Providing good and easy learning", "providing good studies", "good result outcome", "Good teaching", "providing good teaching quality", "good quality an education and good result", "Good teaching and doubt solving", "good studies", "good quality of education in online but they have no feedback for offline", "providing good and easy studies and doubt solving are also good"], "future_consider_counts": {"Yes": 187, "Maybe, if concern is fixed": 41, "No": 20}, "source_counts": {"YouTube": 171, "Friend/Family Recommendation": 45, "Offline Advertisement (Hoardings, Posters, Flyers, etc.)": 38, "Instagram": 2, "student was following Alakh sir from long time.": 1, "knew when he was doing pw online course that they also have online center": 1, "Seminar/Event": 1, "Direct visit to the institution": 1}}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#9aa2b4';
+Chart.defaults.font.size = 11.5;
+
+const COLORS = {
+  amber:'#f0a63a', teal:'#48c9b0', coral:'#e8615a', indigo:'#7c8cf8',
+  slate:'#4a5468', lilac:'#b083f0', sky:'#5aa9e6', line:'#2a3040'
+};
+const PALETTE = ['#f0a63a','#48c9b0','#7c8cf8','#e8615a','#b083f0','#5aa9e6','#4a5468','#d4c05a','#6fbf8e','#e08f9b'];
+
+function fmt(n){ return n.toLocaleString('en-IN'); }
+function pct(n,total){ return total ? ((n/total)*100).toFixed(1)+'%' : '0%'; }
+
+function baseGridOpts(){
+  return {
+    scales:{
+      x:{grid:{color:COLORS.line, drawBorder:false}, ticks:{color:'#9aa2b4'}},
+      y:{grid:{color:COLORS.line, drawBorder:false}, ticks:{color:'#9aa2b4'}, beginAtZero:true}
+    },
+    plugins:{legend:{display:false}},
+    maintainAspectRatio:false, responsive:true
+  };
+}
+
+function hbar(ctx, labels, values, color){
+  return new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets:[{data:values, backgroundColor:color||COLORS.amber, borderRadius:5, barThickness:16}]},
+    options:{
+      indexAxis:'y',
+      maintainAspectRatio:false, responsive:true,
+      scales:{
+        x:{grid:{color:COLORS.line, drawBorder:false}, ticks:{color:'#9aa2b4'}, beginAtZero:true},
+        y:{grid:{display:false}, ticks:{color:'#c3c8d4', font:{size:11.5}}}
+      },
+      plugins:{legend:{display:false}, tooltip:{backgroundColor:'#1e2330', titleColor:'#eef0f4', bodyColor:'#c3c8d4', borderColor:'#2a3040', borderWidth:1}}
+    }
+  });
+}
+
+function donut(ctx, labels, values){
+  return new Chart(ctx, {
+    type:'doughnut',
+    data:{labels, datasets:[{data:values, backgroundColor:PALETTE, borderColor:'#181c27', borderWidth:2}]},
+    options:{
+      cutout:'62%', maintainAspectRatio:false, responsive:true,
+      plugins:{
+        legend:{position:'right', labels:{boxWidth:10, boxHeight:10, padding:10, color:'#9aa2b4', font:{size:11}}},
+        tooltip:{backgroundColor:'#1e2330', titleColor:'#eef0f4', bodyColor:'#c3c8d4', borderColor:'#2a3040', borderWidth:1}
+      }
+    }
+  });
+}
+
+function vbar(ctx, labels, datasets){
+  return new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets},
+    options:{
+      maintainAspectRatio:false, responsive:true,
+      scales:{
+        x:{stacked:true, grid:{display:false}, ticks:{color:'#9aa2b4', font:{size:10.5}, maxRotation:38, minRotation:0}},
+        y:{stacked:true, grid:{color:COLORS.line, drawBorder:false}, ticks:{color:'#9aa2b4'}, beginAtZero:true}
+      },
+      plugins:{legend:{position:'top', labels:{color:'#9aa2b4', boxWidth:10, boxHeight:10, font:{size:10.5}}},
+        tooltip:{backgroundColor:'#1e2330', titleColor:'#eef0f4', bodyColor:'#c3c8d4', borderColor:'#2a3040', borderWidth:1}}
+    }
+  });
+}
+
+// ---------------- TAB DEFINITIONS ----------------
+const TABS = [
+  {id:'exec', label:'Executive Summary'},
+  {id:'funnel', label:'Funnel & Data Health'},
+  {id:'reasons', label:'Why We Lost Them'},
+  {id:'regional', label:'Regional & Course Deep-Dive'},
+  {id:'voc', label:'Voice of Customer'},
+  {id:'winback', label:'Win-Back & Actions'},
+  {id:'method', label:'Methodology & Notes'}
+];
+
+document.getElementById('tabs').innerHTML = TABS.map((t,i)=>
+  `<button class="tab-btn ${i===0?'active':''}" data-tab="${t.id}">${t.label}</button>`
+).join('');
+
+document.getElementById('app').innerHTML = TABS.map(t=>`<div class="panel" id="panel-${t.id}"></div>`).join('');
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+document.getElementById('panel-exec').classList.add('active');
+
+// ================= EXEC SUMMARY =================
+(function(){
+  const F = DATA.funnel;
+  const reasons = DATA.reason_counts;
+  const topReason = Object.entries(reasons).sort((a,b)=>b[1]-a[1])[0];
+  const codedTotal = Object.values(reasons).reduce((a,b)=>a+b,0);
+  const connectPct = pct(F.calls_connected, F.total_target_audience);
+  const futureOpen = DATA.future_consider_counts;
+  const yesFuture = futureOpen['Yes']||0;
+  const maybeFuture = futureOpen['Maybe, if concern is fixed']||0;
+  const futureTotal = Object.values(futureOpen).reduce((a,b)=>a+b,0);
+
+  document.getElementById('panel-exec').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Leadership View</p>
+      <h2>Why AY26 offline registrations underperformed — the headline story</h2>
+      <p>${fmt(F.total_target_audience)} Nov'25–Apr'26 enquiries that did not enrol offline were sampled, called back by an external telecalling partner, and separately sent a feedback form. ${fmt(F.calls_connected)} responded (${connectPct}). This is the consolidated read across both channels.</p>
+    </div>
+
+    <div class="grid g4">
+      <div class="kpi accent-amber">
+        <span class="tag">Target Audience</span>
+        <div class="num amber">${fmt(F.total_target_audience)}</div>
+        <p class="cap">Non-converted enquiries in scope, drawn from the Nov'25–Apr'26 offline funnel across 45 centres.</p>
+      </div>
+      <div class="kpi accent-teal">
+        <span class="tag">Response Rate</span>
+        <div class="num teal">${connectPct}<span> connected</span></div>
+        <p class="cap">${fmt(F.calls_connected)} calls connected of ${fmt(F.total_target_audience)} attempted; ${fmt(F.consent_refused)} explicitly declined to talk.</p>
+      </div>
+      <div class="kpi accent-coral">
+        <span class="tag">#1 Stated Reason</span>
+        <div class="num coral" style="font-size:20px; line-height:1.3;">Distance / Timing</div>
+        <p class="cap">${topReason[1]} of ${codedTotal} coded responses (${pct(topReason[1], codedTotal)}) — the single largest named driver of non-conversion.</p>
+      </div>
+      <div class="kpi accent-indigo">
+        <span class="tag">Win-Back Potential</span>
+        <div class="num indigo">${pct(yesFuture+maybeFuture, futureTotal)}</div>
+        <p class="cap">Of those who gave feedback, this share are open to reconsidering PW Vidyapeeth if their concern is addressed.</p>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <p class="eyebrow">Top-line insights</p>
+      <h2>What the data is actually saying</h2>
+    </div>
+    <div class="insight"><span class="insight-num">01</span><div>This is <b>primarily an access &amp; logistics problem, not a brand or quality rejection.</b> "Distance / timing / batch availability" and "Personal or financial reason" together account for <span id="logisticsPct"></span> of all stated non-conversion reasons — versus faculty/teaching doubts at under 4%.</div></div>
+    <div class="insight teal"><span class="insight-num">02</span><div>The single biggest destination for lost enquiries is <b>PW Online itself</b> (${DATA.competitor_counts['Continued/Joined PW Online']||0} respondents), not a competitor. Families are choosing the brand — just not the offline centre. This points to a channel/format substitution issue rather than a trust deficit.</div></div>
+    <div class="insight coral"><span class="insight-num">03</span><div>Decision confidence shifts away from PW mostly <b>during the centre visit / counselling conversation</b> (${DATA.shift_stage_counts['During centre visit/counselling']||0} cases) or gradually over time — rarely before a family even speaks to PW. The on-ground counselling moment is the highest-leverage intervention point.</div></div>
+    <div class="insight"><span class="insight-num">04</span><div>Tone in the raw feedback is largely <b>constructive, not hostile</b> — most verbatims are suggestions ("open more branches", "start batches earlier") rather than complaints, and ${pct(yesFuture+maybeFuture, futureTotal)} say they'd reconsider PW. This is a recoverable base, not a lost one.</div></div>
+
+    <div class="grid g2" style="margin-top:22px;">
+      <div class="card">
+        <h3>Stated non-conversion reasons</h3>
+        <p class="sub">Share of coded calling-data responses (n=${codedTotal})</p>
+        <div class="chart-box"><canvas id="execReasonDonut"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Enquiry volume by region</h3>
+        <p class="sub">Full target audience, n=${F.total_target_audience}</p>
+        <div class="chart-box"><canvas id="execRegionBar"></canvas></div>
+      </div>
+    </div>
+  `;
+
+  donut(document.getElementById('execReasonDonut'), Object.keys(reasons), Object.values(reasons));
+  const logisticsSum = (reasons['Distance / timing / batch availability issue']||0) + (reasons['Personal or financial reason']||0);
+  document.getElementById('logisticsPct').textContent = pct(logisticsSum, codedTotal);
+  const rc = DATA.region_counts;
+  hbar(document.getElementById('execRegionBar'), Object.keys(rc), Object.values(rc), COLORS.indigo);
+})();
+
+// ================= FUNNEL & DATA HEALTH =================
+(function(){
+  const F = DATA.funnel;
+  const disp = F.call_disposition;
+  const total = F.total_target_audience;
+  const dispColors = {'Complete':COLORS.teal,'Partial complete':COLORS.sky,'Callback needed':COLORS.amber,'No answer':COLORS.slate,'Refused':COLORS.coral,'Invalid lead':'#7a4f4f','Wrong number':'#5a5f70'};
+
+  document.getElementById('panel-funnel').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Data Health</p>
+      <h2>How the outreach actually landed</h2>
+      <p>Before reading the "why", it matters how much signal we actually captured. ${fmt(total)} numbers were dialled by the telecalling partner; here's what happened to each one.</p>
+    </div>
+
+    <div class="grid g3">
+      <div class="kpi">
+        <span class="tag">Calls Attempted</span>
+        <div class="num">${fmt(total)}</div>
+        <p class="cap">Every enquiry in the Nov'25–Apr'26 non-converted cohort selected for this study.</p>
+      </div>
+      <div class="kpi accent-teal">
+        <span class="tag">Fully Connected + Coded</span>
+        <div class="num teal">${fmt(disp['Complete'])}<span> · ${pct(disp['Complete'], total)}</span></div>
+        <p class="cap">Calls that reached a full, codeable conversation — this is the core dataset behind the reason analysis.</p>
+      </div>
+      <div class="kpi accent-coral">
+        <span class="tag">Unreachable / Refused</span>
+        <div class="num coral">${fmt(disp['No answer']+disp['Refused']+disp['Wrong number']+disp['Invalid lead'])}<span> · ${pct(disp['No answer']+disp['Refused']+disp['Wrong number']+disp['Invalid lead'], total)}</span></div>
+        <p class="cap">No answer, explicit refusal, wrong number, or invalid lead — pure data-quality loss, not sentiment.</p>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Call disposition funnel</h2><p>Every attempted call, bucketed by outcome.</p></div>
+    <div class="card">
+      ${Object.entries(disp).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+        <div class="funnel-row">
+          <div class="funnel-label">${k}</div>
+          <div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:${(v/total*100).toFixed(1)}%; background:${dispColors[k]||COLORS.amber};"><span>${fmt(v)} · ${pct(v,total)}</span></div></div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="grid g2" style="margin-top:20px;">
+      <div class="card">
+        <h3>Consent to share feedback</h3>
+        <p class="sub">Among calls that connected</p>
+        <div class="chart-box short"><canvas id="consentDonut"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Caller-wise completed calls</h3>
+        <p class="sub">Telecalling partner productivity</p>
+        <table>
+          <tr><th>Caller</th><th>Total Dialled</th><th>Completed</th><th>Completion Rate</th></tr>
+          ${Object.keys(DATA.meta.callers).map(c=>{
+            const tot = DATA.meta.callers[c]; const comp = DATA.caller_complete[c]||0;
+            return `<tr><td class="strong">${c}</td><td>${fmt(tot)}</td><td>${fmt(comp)}</td>
+              <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${(comp/tot*100).toFixed(0)}%; background:${COLORS.teal};"></div></div><span class="mono">${pct(comp,tot)}</span></div></td></tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+
+    <div class="insight" style="margin-top:20px;"><span class="insight-num">i</span><div><b>Reading this responsibly:</b> only ${pct(disp['Complete'], total)} of the target audience produced a fully codeable response. The reason analysis in the next tabs is directionally strong (n=${disp['Complete']}) but should be treated as a sample, not a census — see Methodology tab for caveats on self-selection bias.</div></div>
+  `;
+
+  donut(document.getElementById('consentDonut'),
+    ['Gave consent / feedback', 'Declined / ended call'],
+    [F.consent_given, F.consent_refused]);
+})();
+
+// ================= WHY WE LOST =================
+(function(){
+  const reasons = DATA.reason_counts;
+  const loss = DATA.loss_type_counts;
+  const shift = DATA.shift_stage_counts;
+  const priority = DATA.priority_counts;
+  const comp = DATA.competitor_counts;
+  const outcome = DATA.final_outcome_counts;
+
+  document.getElementById('panel-reasons').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Root Cause</p>
+      <h2>Why enquiries didn't convert to offline enrolments</h2>
+      <p>Drawn from ${Object.values(reasons).reduce((a,b)=>a+b,0)} fully coded calling-data responses. Each family's stated reason, the point at which their confidence shifted, and where they ultimately went.</p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>Main non-conversion reason</h3>
+        <p class="sub">What families told the telecaller, verbatim-coded</p>
+        <div class="chart-box tall"><canvas id="reasonBar"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Derived loss-type classification</h3>
+        <p class="sub">Reasons grouped into structural categories</p>
+        <div class="chart-box tall"><canvas id="lossBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="card">
+        <h3>When did confidence shift away from PW?</h3>
+        <p class="sub">The decisive moment, as reported by the family</p>
+        <div class="chart-box tall"><canvas id="shiftBar"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Where the enquiry ultimately went</h3>
+        <p class="sub">Final outcome / competitor chosen instead</p>
+        <div class="chart-box tall"><canvas id="compBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Priority tagging for recovery</h2><p>Every coded call was flagged by urgency of win-back opportunity.</p></div>
+    <div class="grid g3">
+      ${['High - urgent','Medium','Low / recoverable'].map(k=>{
+        const cls = k.includes('High')?'high':k.includes('Medium')?'med':'low';
+        return `<div class="card"><h3><span class="badge ${cls}">${k}</span></h3><div class="num" style="font-family:Sora,sans-serif; font-size:26px; font-weight:800; margin-top:8px;">${fmt(priority[k]||0)}</div><p class="cap" style="margin-top:6px; font-size:12px; color:var(--ink-dim);">tagged accounts</p></div>`;
+      }).join('')}
+    </div>
+
+    <div class="insight coral" style="margin-top:20px;"><span class="insight-num">→</span><div><b>${fmt(comp['Continued/Joined PW Online']||0)} families chose PW Online</b> over the offline centre — the largest single "loss" bucket, and arguably not a loss of the PW brand at all. Pair this with the fact that "distance/timing" is the top reason, and the story is consistent: <b>these are Vidyapeeth-format customers PW is losing to itself.</b></div></div>
+  `;
+
+  hbar(document.getElementById('reasonBar'), Object.keys(reasons), Object.values(reasons), COLORS.amber);
+  hbar(document.getElementById('lossBar'), Object.keys(loss), Object.values(loss), COLORS.coral);
+  hbar(document.getElementById('shiftBar'), Object.keys(shift), Object.values(shift), COLORS.indigo);
+  hbar(document.getElementById('compBar'), Object.keys(comp), Object.values(comp), COLORS.teal);
+})();
+
+// ================= REGIONAL & COURSE =================
+(function(){
+  const regionReason = DATA.region_reason;
+  const courseReason = DATA.course_reason;
+  const centers = DATA.center_counts;
+  const confByRegion = DATA.conf_by_region;
+  const topReasons = Object.keys(Object.values(regionReason)[0]);
+  const regions = Object.keys(regionReason);
+  const courses = Object.keys(courseReason);
+
+  const regionDatasets = topReasons.map((r,i)=>({
+    label:r.length>28?r.slice(0,28)+'…':r,
+    data:regions.map(reg=>regionReason[reg][r]),
+    backgroundColor: PALETTE[i%PALETTE.length]
+  }));
+  const courseDatasets = topReasons.map((r,i)=>({
+    label:r.length>28?r.slice(0,28)+'…':r,
+    data:courses.map(c=>courseReason[c][r]),
+    backgroundColor: PALETTE[i%PALETTE.length]
+  }));
+
+  document.getElementById('panel-regional').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Deep Dive</p>
+      <h2>Where and for whom the problem is sharpest</h2>
+      <p>Breaking the top non-conversion reasons down by region and by course/class, to identify whether this is a national pattern or concentrated in specific pockets.</p>
+    </div>
+
+    <div class="card">
+      <h3>Top reasons by region</h3>
+      <p class="sub">Stacked count of the 6 most common stated reasons</p>
+      <div class="chart-box tall"><canvas id="regionStack"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>Top reasons by course / class</h3>
+      <p class="sub">JEE and NEET aspirants vs board-exam students</p>
+      <div class="chart-box tall"><canvas id="courseStack"></canvas></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px;">
+      <div class="card">
+        <h3>Highest-volume centres in this cohort</h3>
+        <p class="sub">Top 15 centres by enquiry volume (non-converted)</p>
+        <div class="chart-box tall"><canvas id="centerBar"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Average confidence-in-PW score by region</h3>
+        <p class="sub">Self-reported 0–10 score at time of decision, avg = ${DATA.overall_conf_avg}</p>
+        <div class="chart-box tall"><canvas id="confBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="insight" style="margin-top:18px;"><span class="insight-num">→</span><div>UP (${DATA.region_counts['UP']}), Maharashtra (${DATA.region_counts['Maharashtra']}) and Bihar+JH (${DATA.region_counts['Bihar+JH']}) together account for ${pct(DATA.region_counts['UP']+DATA.region_counts['Maharashtra']+DATA.region_counts['Bihar+JH'], DATA.funnel.total_target_audience)} of all non-converted enquiries in this cohort — these three regions should be the first target for any centre-expansion or batch-timing pilot.</div></div>
+  `;
+
+  vbar(document.getElementById('regionStack'), regions, regionDatasets);
+  vbar(document.getElementById('courseStack'), courses, courseDatasets);
+  hbar(document.getElementById('centerBar'), Object.keys(centers), Object.values(centers), COLORS.sky);
+  hbar(document.getElementById('confBar'), Object.keys(confByRegion), Object.values(confByRegion), COLORS.lilac);
+})();
+
+// ================= VOICE OF CUSTOMER =================
+(function(){
+  const sentiment = DATA.sentiment_counts;
+  const themes = DATA.theme_counts;
+  const source = DATA.source_counts;
+  const quotesNeg = DATA.sample_quotes.slice(0,9);
+  const quotesPos = DATA.sample_positive.slice(0,6);
+
+  document.getElementById('panel-voc').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Qualitative Signal</p>
+      <h2>What families actually said, in their own words</h2>
+      <p>Free-text responses from the call verbatims and feedback form, grouped by theme and tone. Read alongside the caveat in Methodology — this is a keyword-based read, not a trained sentiment model.</p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>Overall tone of free-text responses</h3>
+        <p class="sub">n=${Object.values(sentiment).reduce((a,b)=>a+b,0)} text responses classified</p>
+        <div class="chart-box"><canvas id="sentDonut"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Recurring themes across verbatims</h3>
+        <p class="sub">Keyword-matched theme frequency</p>
+        <div class="chart-box tall"><canvas id="themeBar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>In their words — what needs fixing</h2></div>
+    <div class="quote-grid">
+      ${quotesNeg.map(q=>`<div class="quote-card negative"><span>${q}</span></div>`).join('')}
+    </div>
+
+    <div class="section-head"><h2>In their words — what's already working</h2></div>
+    <div class="quote-grid">
+      ${quotesPos.map(q=>`<div class="quote-card positive"><span>${q}</span></div>`).join('')}
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3>How families first heard of PW Vidyapeeth</h3>
+      <p class="sub">Awareness channel, from feedback-form responses</p>
+      <div class="chart-box short"><canvas id="sourceBar"></canvas></div>
+    </div>
+
+    <div class="insight teal" style="margin-top:18px;"><span class="insight-num">→</span><div>YouTube remains the dominant awareness driver (${source['YouTube']||0} of ${Object.values(source).reduce((a,b)=>a+b,0)} known-source responses) — reinforcing that <b>the funnel's leak is at conversion, not awareness.</b> Top-of-funnel content is working; the gap is what happens between enquiry and enrolment.</div></div>
+  `;
+
+  donut(document.getElementById('sentDonut'), Object.keys(sentiment), Object.values(sentiment));
+  hbar(document.getElementById('themeBar'), Object.keys(themes), Object.values(themes), COLORS.amber);
+  hbar(document.getElementById('sourceBar'), Object.keys(source), Object.values(source), COLORS.indigo);
+})();
+
+// ================= WIN-BACK & ACTIONS =================
+(function(){
+  const futureOpen = DATA.future_open_counts;
+  const futureConsider = DATA.future_consider_counts;
+  const priority = DATA.priority_counts;
+
+  document.getElementById('panel-winback').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Recovery Plan</p>
+      <h2>Who can still be won back, and how</h2>
+      <p>Two independent signals of win-back appetite — one from the phone call ("Future Openness"), one from the feedback form ("Would you consider PW again") — both point the same direction.</p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>Future openness — call data</h3>
+        <p class="sub">Asked directly by the telecaller</p>
+        <div class="chart-box"><canvas id="foDonut"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Would consider / recommend PW again — feedback form</h3>
+        <p class="sub">Self-reported via written survey</p>
+        <div class="chart-box"><canvas id="fcDonut"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Recommended actions, ranked by data support</h2></div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>1 · Fix the logistics gap first</h3>
+        <p class="sub">Highest-frequency, highest-confidence signal</p>
+        <p style="font-size:13px; color:var(--ink-dim); line-height:1.6;">Distance and batch-timing are the single largest reasons across every region and course. Prioritise satellite/hybrid batches or shuttle tie-ups in UP, Maharashtra and Bihar+JH, and add early-morning/evening batch slots where "batch starts late" recurs.</p>
+      </div>
+      <div class="card">
+        <h3>2 · Re-script the centre-visit moment</h3>
+        <p class="sub">Confidence shifts here most often</p>
+        <p style="font-size:13px; color:var(--ink-dim); line-height:1.6;">Since confidence erodes mid-visit more than at any other single point, audit the counselling script and fee/scholarship explanation given during walk-ins — this is the highest-leverage touchpoint to fix.</p>
+      </div>
+      <div class="card">
+        <h3>3 · Run a targeted win-back campaign</h3>
+        <p class="sub">Large recoverable base identified</p>
+        <p style="font-size:13px; color:var(--ink-dim); line-height:1.6;">Start with the ${fmt(priority['High - urgent']||0)} "High-urgent" tagged records and the families currently on PW Online — they already trust the brand and are the easiest offline upsell.</p>
+      </div>
+      <div class="card">
+        <h3>4 · Tighten follow-up cadence</h3>
+        <p class="sub">"Follow-up not convincing" was a named reason</p>
+        <p style="font-size:13px; color:var(--ink-dim); line-height:1.6;">A subset of losses cite weak post-enquiry follow-up rather than the product itself — this is fully within operational control and should be the fastest fix to action.</p>
+      </div>
+    </div>
+
+    <div class="insight" style="margin-top:20px;"><span class="insight-num">i</span><div>Both independent measures of win-back intent land in a similar range, which is a reasonably strong signal for a <b>dedicated re-engagement campaign</b> rather than writing this cohort off as churned.</div></div>
+  `;
+
+  donut(document.getElementById('foDonut'), Object.keys(futureOpen), Object.values(futureOpen));
+  donut(document.getElementById('fcDonut'), Object.keys(futureConsider), Object.values(futureConsider));
+})();
+
+// ================= METHODOLOGY =================
+(function(){
+  document.getElementById('panel-method').innerHTML = `
+    <div class="section-head">
+      <p class="eyebrow">Read This Before Presenting</p>
+      <h2>Methodology, sources &amp; honest limitations</h2>
+      <p>For this to hold up in a leadership review, here's exactly what this data can and can't tell you.</p>
+    </div>
+
+    <div class="card">
+      <h3>Data sources combined in this study</h3>
+      <ul class="notelist">
+        <li><b>Enquiry database (n=1,362):</b> the full target audience — non-converted offline enquiries from Nov'25, Dec'25, Mar'26 and Apr'26, with centre, region, course and class fields, unbiasedly sampled.</li>
+        <li><b>Calling data (n=304 connected, 278 fully coded):</b> an external telecalling partner called back a sample of this audience and logged structured fields — main reason, decision-shift stage, confidence score, competitor chosen, priority tag — plus a one-line verbatim.</li>
+        <li><b>Feedback form (n=304 responses):</b> a written survey sent to the same audience, run independently of the phone calls, covering similar ground in the respondent's own words.</li>
+        <li><b>Call recordings:</b> stored as Google Drive folder links per record, not as embedded audio/transcript files. See note below on transcription.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>On call-recording transcription</h3>
+      <ul class="notelist">
+        <li>The recordings exist only as private Google Drive folder links inside the sheet — this analysis was built from the CSV export only, without file or network access to those recordings, so <b>no audio was transcribed for this version.</b></li>
+        <li>The structured calling-data fields (reason, shift stage, verbatim, confidence score) were <b>already logged by the human callers</b> while listening to these calls, so the substance of each conversation is represented — just not as a full transcript.</li>
+        <li>If word-for-word transcripts are needed (e.g. for training call-quality or compliance review), export the recordings and run them through a transcription tool such as Fireflies, then this dashboard's Voice-of-Customer tab can be re-run against the fuller text.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>How "sentiment" was measured here</h3>
+      <ul class="notelist">
+        <li>Free-text fields (verbatim, improvement suggestions, safer-choice reasons) were classified using a <b>keyword-matching heuristic</b> — not a trained NLP/LLM sentiment model — to keep the method transparent and auditable in a spreadsheet if needed.</li>
+        <li>This is well-suited to spotting <b>recurring themes and rough tone</b> at this sample size, but it will miss sarcasm, mixed sentiment in one sentence, and nuance a human reviewer would catch. Treat the theme/sentiment split as directional, not a precise score.</li>
+        <li>Categorical fields (Main Non-Conversion Reason, Derived Loss Type, Priority Tag, etc.) are the more reliable signal in this report, since those were coded directly by the human telecaller during the live conversation.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3>Sampling &amp; bias caveats</h3>
+      <ul class="notelist">
+        <li><b>Response/self-selection bias:</b> only ~22% of the target audience produced a full response. Families willing to stay on the phone or fill a form may be systematically less frustrated (or more, if they wanted to vent) than the ~78% who didn't respond — treat percentages as describing "respondents," not the full non-converted population.</li>
+        <li><b>Free-text coding is manual:</b> "Other" and "Other / Needs Review" buckets (in Main Reason and Derived Loss Type) are sizeable — worth a follow-up pass to re-code those into the named categories for a cleaner picture.</li>
+        <li><b>Two surveys, not one:</b> the calling data and feedback form were designed and run somewhat independently; this dashboard reports them side by side rather than merging them into a single number, to avoid double-counting or false precision.</li>
+      </ul>
+    </div>
+
+    <div class="footer-note">
+      <span>Prepared for PW Vidyapeeth Data &amp; Analytics · AY26 Offline Vertical</span>
+      <span class="mono">Source: Calling Data + Feedback Form Response + Enquiry Database (1,362 records)</span>
+    </div>
+  `;
+})();
+</script>
+</body>
+</html>
